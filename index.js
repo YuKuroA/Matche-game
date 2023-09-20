@@ -1,12 +1,15 @@
-class GameGrid {
+class MatchGrid {
   cardValues = [];
   flippedCards = [];
   machedCards = [];
 
-  constructor(columns, rows, parent) {
+  constructor(height, width, columns, rows, parent, timer) {
+    this.height = height;
+    this.width = width;
     this.columns = columns;
     this.rows = rows;
     this.parent = parent;
+    this.timer = timer;
     this.cardsTotal = this.columns * this.rows;
   }
 
@@ -15,18 +18,20 @@ class GameGrid {
     const cardBack = document.createElement("div");
     card.classList.add("card");
     card.onclick = this.flipCard.bind(this);
+    card.style.height = this.height + "px";
+    card.style.width = this.width + "px";
     cardBack.classList.add("back");
     cardBack.classList.add("showed");
     card.appendChild(cardBack);
     this.parent.appendChild(card);
   }
 
-  gameEnd() {
+  gameEnd(type, massage) {
     const endScreen = document.createElement("div");
-    endScreen.innerHTML = "Congratulation!";
+    endScreen.innerHTML = massage;
     endScreen.classList.add("end-screen");
     endScreen.classList.add("showed");
-    endScreen.classList.add("win");
+    endScreen.classList.add(type);
     this.parent.appendChild(endScreen);
   }
 
@@ -47,7 +52,7 @@ class GameGrid {
     }
 
     if (this.machedCards.length === this.cardsTotal) {
-      this.gameEnd();
+      this.gameEnd("win", "Congretulation!");
     }
   }
 
@@ -107,6 +112,10 @@ class GameGrid {
       front.innerHTML = this.cardValues[index];
       element.appendChild(front);
     });
+
+    setTimeout(() => {
+      this.gameEnd("loss", "Time is out!");
+    }, this.timer * 1000);
   }
 }
 
@@ -114,6 +123,8 @@ const gridContainer = document.querySelector(".grid-container");
 const navBar = document.querySelector("nav");
 const form = navBar.querySelector("form");
 const startButton = navBar.querySelector(".start");
+const inputHeight = form.querySelector('input[name="height"]');
+const inputWidth = form.querySelector('input[name="width"]');
 const inputColumns = form.querySelector('input[name="columns"]');
 const inputRows = form.querySelector('input[name="rows"]');
 const inputTimer = form.querySelector('input[name="timer"]');
@@ -129,6 +140,8 @@ function start() {
 
 function handleSubmit(event) {
   event.preventDefault();
+  const height = inputHeight.value;
+  const width = inputWidth.value;
   const columns = inputColumns.value;
   const rows = inputRows.value;
   const timer = inputTimer.value;
@@ -139,19 +152,23 @@ function handleSubmit(event) {
     return;
   }
 
+  if ((columns * rows) % 2 === 1) {
+    errorMassage.innerHTML = "Total number of cards should be divisible by 2";
+    errorMassage.classList.remove("hidden");
+    return;
+  }
+
   form.classList.add("hidden");
   startButton.classList.remove("hidden");
 
-  const game = new GameGrid(columns, rows, gridContainer);
+  const game = new MatchGrid(
+    height,
+    width,
+    columns,
+    rows,
+    gridContainer,
+    timer
+  );
 
   game.createGrid();
-
-  setTimeout(() => {
-    const endScreen = document.createElement("div");
-    endScreen.innerHTML = "Time is out!";
-    endScreen.classList.add("end-screen");
-    endScreen.classList.add("showed");
-    endScreen.classList.add("loss");
-    gridContainer.appendChild(endScreen);
-  }, timer * 1000);
 }
