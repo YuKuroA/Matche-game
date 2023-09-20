@@ -1,0 +1,120 @@
+body {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: antiquewhite;
+}
+
+header {
+  text-align: center;
+  background-color: cornflowerblue;
+  padding-top: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+h1 {
+  margin: 0;
+}
+
+.hidden {
+  display: none;
+}
+
+.showed {
+  display: block;
+}
+
+nav {
+  display: flex;
+  gap: 120px;
+  justify-content: center;
+  align-items: center;
+  background-color: aquamarine;
+  padding: 10px;
+  position: sticky;
+  z-index: 1000;
+}
+
+nav p {
+  font-size: 18px;
+}
+
+nav button {
+  background-color: azure;
+  border: solid 1px black;
+  font-size: 24px;
+  height: 45px;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+nav form {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+nav input {
+  height: 45px;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+nav .error {
+  color: crimson;
+}
+
+.grid-container {
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  padding: 40px 120px;
+  row-gap: 30px;
+  column-gap: 30px;
+}
+
+.card {
+  height: 100px;
+  width: 100px;
+  text-align: center;
+  border: solid 1px black;
+  border-radius: 5px;
+  box-sizing: border-box;
+  font-size: 36px;
+}
+
+.front {
+  height: 100%;
+  width: 100%;
+  background-color: aqua;
+}
+
+.back {
+  height: 100%;
+  width: 100%;
+  background-color: blueviolet;
+  cursor: grab;
+}
+
+.end-screen {
+  position: absolute;
+  font-size: 60px;
+  text-align: center;
+  width: 100%;
+  height: 90%;
+  box-sizing: border-box;
+  left: 0;
+  top: 0;
+  padding: 30%;
+}
+
+.win {
+  background-color: chartreuse;
+}
+
+.loss {
+  background-color: crimson;
+}

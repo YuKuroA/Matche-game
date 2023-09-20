@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Maching game</title>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Maching game</h1>
+      <nav>
+        <button class="start" onclick="start()">Start</button>
+        <form onsubmit="handleSubmit(event)" class="hidden">
+          <input
+            type="number"
+            name="columns"
+            placeholder="Input number of columns"
+          />
+          <input type="number" name="rows" placeholder="Input number of rows" />
+          <input
+            type="number"
+            name="timer"
+            placeholder="Input time limit, seconds"
+          />
+          <button type="submit">Submit</button>
+          <div class="error hidden"></div>
+        </form>
+      </nav>
+    </header>
+
+    <main>
+      <div class="grid-container"></div>
+    </main>
+    <script src="index.js"></script>
+  </body>
+</html>
