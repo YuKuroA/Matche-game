@@ -9,9 +9,9 @@
   <body>
     <header>
       <h1>Maching game</h1>
-      <nav>
-        <button class="start" onclick="start()">Start</button>
-        <form onsubmit="handleSubmit(event)" class="hidden">
+      <nav id="menu">
+        <button id="start" class="start" onclick="start()">Start</button>
+        <form id="game-options-form" onsubmit="handleSubmit(event)" class="hidden">
           <input
             type="number"
             name="height"
@@ -26,11 +26,11 @@
           <input type="number" name="rows" placeholder="Input number of rows" />
           <input
             type="number"
-            name="timer"
+            name="time"
             placeholder="Input time limit, seconds"
           />
           <button type="submit">Submit</button>
-          <div class="error hidden"></div>
+          <div id="error-message" class="error hidden"></div>
         </form>
       </nav>
     </header>
@@ -39,5 +39,6 @@
       <div class="grid-container"></div>
     </main>
     <script src="index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   </body>
 </html>

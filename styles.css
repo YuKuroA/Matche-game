@@ -1,6 +1,9 @@
+html {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  width: 100vw;
   height: 100vh;
   background-color: antiquewhite;
 }
@@ -8,113 +11,140 @@ body {
 header {
   text-align: center;
   background-color: cornflowerblue;
-  padding-top: 10px;
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 
 h1 {
+  align-items: center;
+  display: flex;
+  height: 50px;
+  justify-content: center;
   margin: 0;
+  padding: 10px;
 }
 
 .hidden {
   display: none;
 }
 
-.showed {
-  display: block;
-}
-
 nav {
-  display: flex;
-  gap: 120px;
-  justify-content: center;
   align-items: center;
   background-color: aquamarine;
-  padding: 10px;
-  position: sticky;
-  z-index: 1000;
-}
-
-nav p {
-  font-size: 18px;
-}
-
-nav button {
-  background-color: azure;
-  border: solid 1px black;
-  font-size: 24px;
-  height: 45px;
-  border-radius: 5px;
-  padding: 10px;
-}
-
-nav form {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
-}
+  gap: 20px;
+  padding: 10px;
 
-nav input {
-  height: 45px;
-  border-radius: 5px;
-  box-sizing: border-box;
-}
+  & p {
+    font-size: 18px;
+  }
 
-nav .error {
-  color: crimson;
+  .timer {
+    align-items: center;
+    display: flex;
+    background-color: #333; 
+    color: #fff;
+    font-size: 1.5rem; 
+    height: 45px;
+    justify-content: center;
+    letter-spacing: 2px;
+    padding: 0 20px;
+    border-radius: 5px;
+    font-family: Arial, sans-serif; /* Font family */
+    font-weight: bold;
+  }
+
+  & button {
+    background-color: azure;
+    border: solid 1px black;
+    font-size: 24px;
+    height: 45px;
+    border-radius: 5px;
+    padding: 10px;
+  }
+
+  & form {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  & input {
+    height: 45px;
+    border-radius: 5px;
+    box-sizing: border-box;
+  }
+
+  & .error {
+    color: crimson;
+  }
 }
 
 .grid-container {
   display: grid;
-  justify-content: center;
-  align-content: center;
+  justify-items: center;
+  align-items: center;
   padding: 40px 120px;
   row-gap: 30px;
   column-gap: 30px;
 }
 
 .card {
-  height: 100px;
-  width: 100px;
-  text-align: center;
   border: solid 1px black;
   border-radius: 5px;
   box-sizing: border-box;
-  font-size: 36px;
-}
+  height: 100px;
+  position: relative;
+  text-align: center;
+  transform-style: preserve-3d;
+  width: 100px;
 
-.front {
-  height: 100%;
-  width: 100%;
-  background-color: aqua;
-}
+  & .front, .back {
+    align-items: center;
+    backface-visibility: visible;
+    background-color: #3498db;
+    color: white;
+    display: flex;
+    font-size: 24px;
+    height: 100%;
+    justify-content: center;
+    position: absolute;
+    width: 100%;
+  }
 
-.back {
-  height: 100%;
-  width: 100%;
-  background-color: blueviolet;
-  cursor: grab;
+  & .front {
+    transform: rotateY(-180deg);
+  }
+
+  & .back {
+    z-index: 5000;
+  }
 }
 
 .end-screen {
-  position: absolute;
-  font-size: 60px;
-  text-align: center;
-  width: 100%;
-  height: 90%;
+  align-items: center;
   box-sizing: border-box;
+  display: flex;
+  font-size: 60px;
+  height: 100%;
+  justify-content: center;
   left: 0;
+  text-align: center;
   top: 0;
-  padding: 30%;
+  position: absolute;
+  width: 100%;
+
+  &.win {
+    background-color: chartreuse;
+  }
+  
+  &.loss {
+    background-color: crimson;
+  }
 }
 
-.win {
-  background-color: chartreuse;
-}
-
-.loss {
-  background-color: crimson;
-}

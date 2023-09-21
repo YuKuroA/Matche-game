@@ -1,153 +1,36 @@
-class MatchGrid {
-  cardValues = [];
-  flippedCards = [];
-  machedCards = [];
-
-  constructor(height, width, columns, rows, parent, timer) {
-    this.height = height;
-    this.width = width;
-    this.columns = columns;
-    this.rows = rows;
-    this.parent = parent;
-    this.timer = timer;
-    this.cardsTotal = this.columns * this.rows;
-  }
-
-  createCard() {
-    const card = document.createElement("div");
-    const cardBack = document.createElement("div");
-    card.classList.add("card");
-    card.onclick = this.flipCard.bind(this);
-    card.style.height = this.height + "px";
-    card.style.width = this.width + "px";
-    cardBack.classList.add("back");
-    cardBack.classList.add("showed");
-    card.appendChild(cardBack);
-    this.parent.appendChild(card);
-  }
-
-  gameEnd(type, massage) {
-    const endScreen = document.createElement("div");
-    endScreen.innerHTML = massage;
-    endScreen.classList.add("end-screen");
-    endScreen.classList.add("showed");
-    endScreen.classList.add(type);
-    this.parent.appendChild(endScreen);
-  }
-
-  checkCards() {
-    const [card1, card2] = this.flippedCards;
-    const front1 = card1.querySelector(".front").innerHTML;
-    const front2 = card2.querySelector(".front").innerHTML;
-
-    if (front1 === front2) {
-      this.machedCards.push(card1, card2);
-      this.flippedCards = [];
-    } else {
-      setTimeout(() => {
-        this.toggleFlip(card1, false);
-        this.toggleFlip(card2, false);
-        this.flippedCards = [];
-      }, 1000);
-    }
-
-    if (this.machedCards.length === this.cardsTotal) {
-      this.gameEnd("win", "Congretulation!");
-    }
-  }
-
-  toggleFlip(card, open) {
-    const front = card.querySelector(".front");
-    const back = card.querySelector(".back");
-
-    if (open) {
-      back.style.display = "none";
-      front.style.display = "block";
-    }
-
-    if (!open) {
-      front.style.display = "none";
-      back.style.display = "block";
-    }
-  }
-
-  flipCard(event) {
-    const card = event.target.parentNode;
-
-    if (!this.flippedCards.includes(card) && this.flippedCards.length < 2) {
-      this.flippedCards.push(card);
-      this.toggleFlip(card, true);
-
-      if (this.flippedCards.length === 2) {
-        this.checkCards();
-      }
-    }
-  }
-
-  createGrid() {
-    for (let i = 0; i < this.cardsTotal; i++) {
-      this.createCard();
-      this.cardValues.push(i);
-    }
-
-    this.parent.style.setProperty(
-      `grid-template-columns`,
-      `repeat(${this.columns}, 1fr)`
-    );
-
-    this.cardValues = this.cardValues.slice(0, this.cardsTotal / 2).sort(() => {
-      return Math.random() - 0.5;
-    });
-
-    this.cardValues = this.cardValues.concat(this.cardValues).sort(() => {
-      return Math.random() - 0.5;
-    });
-
-    const cards = this.parent.querySelectorAll(".card");
-
-    cards.forEach((element, index) => {
-      const front = document.createElement("div");
-      front.classList.add("front");
-      front.classList.add("hidden");
-      front.innerHTML = this.cardValues[index];
-      element.appendChild(front);
-    });
-
-    setTimeout(() => {
-      this.gameEnd("loss", "Time is out!");
-    }, this.timer * 1000);
-  }
-}
-
+const errorMassage = document.getElementById("error-message");
+const form = document.getElementById("game-options-form");
 const gridContainer = document.querySelector(".grid-container");
-const navBar = document.querySelector("nav");
-const form = navBar.querySelector("form");
-const startButton = navBar.querySelector(".start");
-const inputHeight = form.querySelector('input[name="height"]');
-const inputWidth = form.querySelector('input[name="width"]');
-const inputColumns = form.querySelector('input[name="columns"]');
-const inputRows = form.querySelector('input[name="rows"]');
-const inputTimer = form.querySelector('input[name="timer"]');
-const errorMassage = navBar.querySelector(".error");
+const startButton = document.getElementById("start");
+
+let game;
 
 function start() {
+  if (game) {
+    game.clear();
+  }
+
   form.classList.remove("hidden");
   startButton.classList.add("hidden");
-  gridContainer.innerHTML = "";
-  inputColumns.value = "";
-  inputRows.value = "";
 }
 
 function handleSubmit(event) {
   event.preventDefault();
-  const height = inputHeight.value;
-  const width = inputWidth.value;
-  const columns = inputColumns.value;
-  const rows = inputRows.value;
-  const timer = inputTimer.value;
+  
+  const height = event.target.height.value;
+  const width = event.target.width.value;
+  const columns = event.target.columns.value;
+  const rows = event.target.rows.value;
+  const time = event.target.time.value;
 
-  if (!columns || !rows || !timer) {
+  if (!columns || !rows || !time) {
     errorMassage.innerHTML = "Fill all fields to start the game!";
+    errorMassage.classList.remove("hidden");
+    return;
+  }
+
+  if (columns < 0 || rows < 0 || time < 0) {
+    errorMassage.innerHTML = "All values should be positive!";
     errorMassage.classList.remove("hidden");
     return;
   }
@@ -161,14 +44,271 @@ function handleSubmit(event) {
   form.classList.add("hidden");
   startButton.classList.remove("hidden");
 
-  const game = new MatchGrid(
+  game = new MatchGrid(
     height,
     width,
     columns,
     rows,
-    gridContainer,
-    timer
+    time,
+    theme
   );
 
-  game.createGrid();
+  game.container = gridContainer;
+
+  game.render();
+}
+
+const theme = {
+  backgroundColor: "antiquewhite",
+  fontSize: "36px",
+};
+
+
+class Card {
+  #card;
+  #back;
+  #front;
+  #id = crypto.randomUUID();
+  #isOpen = false;
+  #isFlipDisabled = false;
+
+  constructor(height, width, value, openCard) {
+    this.height = height;
+    this.width = width;
+    this.value = value;
+    this.openCard = openCard;
+  }
+
+  get id() {
+    return this.#id;
+  }
+
+  set isFlipDisabled(value) {
+    this.#isFlipDisabled = value;
+  }
+
+  flip() {
+    if (this.#isFlipDisabled) {
+      return;
+    }
+
+    try {
+      this.#isOpen = !this.#isOpen;
+      this.#back.style.display = this.#isOpen ? "none" : 'flex';
+      this.#front.style.display = this.#isOpen ? 'flex' : 'none';
+
+      anime({
+        targets: this.#card,
+        rotateY: {
+            value: this.#isOpen ? '180' : '0',
+            duration: 300,
+            easing: 'easeInOutSine',
+        },
+    });
+    } catch {
+      return;
+    }
+  }
+
+  render() {
+    this.#card = document.createElement("div");
+    this.#back = document.createElement("div");
+    this.#front = document.createElement("div");
+
+    this.#card.classList.add("card");
+    this.#card.onclick = () => this.openCard(this);
+    this.#card.style.height = this.height + "px";
+    this.#card.style.width = this.width + "px";
+
+    this.#back.classList.add("back");
+    this.#card.appendChild(this.#back);
+
+    this.#front.classList.add("front");
+    this.#front.innerHTML = this.value;
+    this.#card.appendChild(this.#front);
+
+    return this.#card;
+  }
+}
+
+class Timer {
+  #timer;
+  #timerUpdateInterval;
+
+  constructor (time, onTimeUp) {
+    this.endTime = Date.now() + time*1000;
+    this.onTimeUp = onTimeUp;
+  }
+
+  clear() {
+    this.#timer.remove()
+  }
+
+  convertTimeToMMSS(time) {
+    const milisInSeconds =  Math.floor(time / 1000);
+    const minutes = Math.floor(milisInSeconds / 60);
+
+    return `${minutes}:${milisInSeconds % 60}`
+  }
+
+  stop() {
+    clearInterval(this.#timerUpdateInterval);
+  }
+  
+  updateTime() {
+    if (this.endTime - Date.now() < 0) {
+      this.onTimeUp?.();
+
+      this.#timer.innerHTML = `00:00`;
+
+      clearInterval(this.#timerUpdateInterval);
+      return;
+    }
+
+
+    this.#timer.innerHTML = this.convertTimeToMMSS(this.endTime - Date.now());
+  }
+
+  render() {
+    const menu = document.getElementById('menu');
+    this.#timer = document.createElement("div");
+    this.#timer.classList.add('timer');
+    this.#timer.innerHTML = this.convertTimeToMMSS(this.endTime - Date.now());
+
+    menu.prepend(this.#timer)
+
+    this.#timerUpdateInterval = setInterval(this.updateTime.bind(this), 1000)
+  }
+}
+
+class MatchGrid {
+  #cards = [];
+  #container;
+  #flippedCards = [];
+  #machedCards = [];
+  #timer;
+
+  constructor(cardHeight, cardWidth, columns, rows, time, theme) {
+    this.cardHeight = cardHeight;
+    this.cardWidth = cardWidth;
+    this.columns = columns;
+    this.rows = rows;
+    this.theme = theme;
+    this.cardsTotal = this.columns * this.rows;
+
+    this.#timer = new Timer(time, () => this.gameEnd("loss", "Time is out!"))
+  }
+
+  set container(container) {
+    this.#container = container;
+  }
+
+  checkCards() {
+    const [card1, card2] = this.#flippedCards;
+    this.#flippedCards = [];
+
+    if (card1.value !== card2.value) {
+      setTimeout(() => {
+        card1.flip();
+        card2.flip();
+      }, 500)
+      
+      return;
+    }
+
+    card1.isFlipDisabled = true;
+    card2.isFlipDisabled = true;
+    
+    this.#machedCards.push(card1, card2);
+
+    if (this.#machedCards.length === this.cardsTotal) {
+      this.gameEnd("win", "Congratulation!");
+      this.#timer.stop();
+    }
+  }
+
+  clear() {
+    this.#container.innerHTML = "";
+    
+    // clear all related instances
+    this.#timer.clear();
+  }
+  
+  gameEnd(type, massage) {
+    this.#container.innerHTML = "";
+
+    const endScreen = document.createElement("div");
+    endScreen.innerHTML = massage;
+    endScreen.classList.add("end-screen");
+    endScreen.classList.remove("hidden");
+    endScreen.classList.add(type);
+    this.#container.appendChild(endScreen);
+  }
+
+  generateCards() {
+    let cardValues = [];
+
+    for (let i = 0; i < this.cardsTotal; i++) {
+      cardValues.push(i);
+    }
+
+    cardValues = cardValues.slice(0, this.cardsTotal / 2).sort(() => {
+      return Math.random() - 0.5;
+    });
+
+    cardValues = cardValues.concat(cardValues).sort(() => {
+      return Math.random() - 0.5;
+    });
+
+    
+    for (let i = 0; i < this.cardsTotal; i++) {
+      this.#cards.push(new Card(
+        this.cardHeight,
+        this.cardWidth,
+        cardValues[i],
+        (card) => this.openCard(card)
+      ));
+    }
+  }
+
+  openCard(card) {
+    if (this.#flippedCards.find(flippedCard => flippedCard.id === card.id)) {
+      return;
+    }
+
+    if (this.#machedCards.find(matchedCard => matchedCard.id === card.id)) {
+      return;
+    }
+
+    if (this.#flippedCards.length < 2) {
+      this.#flippedCards.push(card);
+      card.flip();
+    }
+
+    if (this.#flippedCards.length === 2) {
+      this.checkCards()
+    }
+  }
+  
+  setContainer() {
+    this.#container.style.setProperty(
+      `grid-template-columns`,
+      `repeat(${this.columns}, 1fr)`
+    );
+
+    this.#container.style.setProperty(
+      "background-color",
+      this.theme.backgroundColor
+    );
+
+    this.#container.style.setProperty("font-size", this.theme.fontSize);
+  }
+
+  render() {
+    this.setContainer();
+    this.generateCards();
+    
+    this.#cards.forEach(card => this.#container.appendChild(card.render()));
+    this.#timer.render();
+  }
 }
