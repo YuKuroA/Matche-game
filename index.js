@@ -1,29 +1,112 @@
+class Card {
+  #card;
+  #back;
+  #front;
+  #id = crypto.randomUUID();
+  #open = false;
+
+  constructor(height, width, value, container, openCard) {
+    this.height = height;
+    this.width = width;
+    this.value = value;
+    this.container = container;
+    this.openCard = openCard;
+  }
+
+  get id() {
+    return this.#id;
+  }
+
+  flip() {
+    try {
+      this.#open = !this.#open;
+
+      this.#back.style.display = this.#open ? "none" : "block";
+      this.#front.style.display = this.#open ? "block" : "none";
+    } catch {
+      return;
+    }
+  }
+
+  render() {
+    this.#card = document.createElement("div");
+    this.#back = document.createElement("div");
+    this.#front = document.createElement("div");
+
+    this.#card.classList.add("card");
+    this.#card.onclick = () => this.openCard(this);
+    this.#card.style.height = this.height + "px";
+    this.#card.style.width = this.width + "px";
+
+    this.#back.classList.add("back");
+    this.#back.classList.add("showed");
+    this.#card.appendChild(this.#back);
+
+    this.#front.classList.add("front");
+    this.#front.classList.add("hidden");
+    this.#front.innerHTML = this.value;
+    this.#card.appendChild(this.#front);
+
+    this.container.appendChild(this.#card);
+  }
+}
+
 class MatchGrid {
-  cardValues = [];
+  #cards = [];
   flippedCards = [];
   machedCards = [];
 
-  constructor(height, width, columns, rows, parent, timer) {
+  constructor(height, width, columns, rows, container, timer, theme) {
     this.height = height;
     this.width = width;
     this.columns = columns;
     this.rows = rows;
-    this.parent = parent;
+    this.container = container;
     this.timer = timer;
+    this.theme = theme;
     this.cardsTotal = this.columns * this.rows;
   }
 
-  createCard() {
-    const card = document.createElement("div");
-    const cardBack = document.createElement("div");
-    card.classList.add("card");
-    card.onclick = this.flipCard.bind(this);
-    card.style.height = this.height + "px";
-    card.style.width = this.width + "px";
-    cardBack.classList.add("back");
-    cardBack.classList.add("showed");
-    card.appendChild(cardBack);
-    this.parent.appendChild(card);
+  setContainer() {
+    this.container.style.setProperty(
+      `grid-template-columns`,
+      `repeat(${this.columns}, 1fr)`
+    );
+
+    this.container.style.setProperty(
+      "background-color",
+      this.theme.backgroundColor
+    );
+
+    this.container.style.setProperty("font-size", this.theme.fontSize);
+  }
+
+  generateCards() {
+    let cardValues = [];
+
+    for (let i = 0; i < this.cardsTotal; i++) {
+      cardValues.push(i);
+    }
+
+    cardValues = cardValues.slice(0, this.cardsTotal / 2).sort(() => {
+      return Math.random() - 0.5;
+    });
+
+    cardValues = cardValues.concat(cardValues).sort(() => {
+      return Math.random() - 0.5;
+    });
+
+    for (let i = 0; i < this.cardsTotal; i++) {
+      this.#cards.push(
+        new Card(
+          this.height,
+          this.width,
+          cardValues[i],
+          this.container,
+          (card) => this.openCard(card)
+        )
+      );
+    }
   }
 
   gameEnd(type, massage) {
@@ -32,86 +115,50 @@ class MatchGrid {
     endScreen.classList.add("end-screen");
     endScreen.classList.add("showed");
     endScreen.classList.add(type);
-    this.parent.appendChild(endScreen);
+    this.container.appendChild(endScreen);
   }
 
   checkCards() {
     const [card1, card2] = this.flippedCards;
-    const front1 = card1.querySelector(".front").innerHTML;
-    const front2 = card2.querySelector(".front").innerHTML;
+    this.flippedCards = [];
 
-    if (front1 === front2) {
-      this.machedCards.push(card1, card2);
-      this.flippedCards = [];
-    } else {
+    if (card1.value != card2.value) {
       setTimeout(() => {
-        this.toggleFlip(card1, false);
-        this.toggleFlip(card2, false);
-        this.flippedCards = [];
-      }, 1000);
+        card1.flip();
+        card2.flip();
+      }, 500);
+
+      return;
     }
 
+    this.machedCards.push(card1, card2);
+
+    console.log(card1, card2, this.machedCards);
     if (this.machedCards.length === this.cardsTotal) {
-      this.gameEnd("win", "Congretulation!");
+      this.gameEnd("win", "Congratulation!");
     }
   }
 
-  toggleFlip(card, open) {
-    const front = card.querySelector(".front");
-    const back = card.querySelector(".back");
-
-    if (open) {
-      back.style.display = "none";
-      front.style.display = "block";
+  openCard(card) {
+    if (this.flippedCards.find((flippedCard) => flippedCard.id === card.id)) {
+      return;
     }
 
-    if (!open) {
-      front.style.display = "none";
-      back.style.display = "block";
-    }
-  }
-
-  flipCard(event) {
-    const card = event.target.parentNode;
-
-    if (!this.flippedCards.includes(card) && this.flippedCards.length < 2) {
+    if (this.flippedCards.length < 2) {
       this.flippedCards.push(card);
-      this.toggleFlip(card, true);
+      card.flip();
+    }
 
-      if (this.flippedCards.length === 2) {
-        this.checkCards();
-      }
+    if (this.flippedCards.length === 2) {
+      this.checkCards();
     }
   }
 
-  createGrid() {
-    for (let i = 0; i < this.cardsTotal; i++) {
-      this.createCard();
-      this.cardValues.push(i);
-    }
+  render() {
+    this.setContainer();
+    this.generateCards();
 
-    this.parent.style.setProperty(
-      `grid-template-columns`,
-      `repeat(${this.columns}, 1fr)`
-    );
-
-    this.cardValues = this.cardValues.slice(0, this.cardsTotal / 2).sort(() => {
-      return Math.random() - 0.5;
-    });
-
-    this.cardValues = this.cardValues.concat(this.cardValues).sort(() => {
-      return Math.random() - 0.5;
-    });
-
-    const cards = this.parent.querySelectorAll(".card");
-
-    cards.forEach((element, index) => {
-      const front = document.createElement("div");
-      front.classList.add("front");
-      front.classList.add("hidden");
-      front.innerHTML = this.cardValues[index];
-      element.appendChild(front);
-    });
+    this.#cards.forEach((card) => card.render());
 
     setTimeout(() => {
       this.gameEnd("loss", "Time is out!");
@@ -167,8 +214,14 @@ function handleSubmit(event) {
     columns,
     rows,
     gridContainer,
-    timer
+    timer,
+    theme
   );
 
-  game.createGrid();
+  game.render();
 }
+
+const theme = {
+  backgroundColor: "antiquewhite",
+  fontSize: "36px",
+};
