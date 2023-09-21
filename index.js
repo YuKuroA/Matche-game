@@ -16,7 +16,7 @@ function start() {
 
 function handleSubmit(event) {
   event.preventDefault();
-  
+
   const height = event.target.height.value;
   const width = event.target.width.value;
   const columns = event.target.columns.value;
@@ -44,14 +44,7 @@ function handleSubmit(event) {
   form.classList.add("hidden");
   startButton.classList.remove("hidden");
 
-  game = new MatchGrid(
-    height,
-    width,
-    columns,
-    rows,
-    time,
-    theme
-  );
+  game = new MatchGrid(height, width, columns, rows, time, theme);
 
   game.container = gridContainer;
 
@@ -62,7 +55,6 @@ const theme = {
   backgroundColor: "antiquewhite",
   fontSize: "36px",
 };
-
 
 class Card {
   #card;
@@ -94,17 +86,17 @@ class Card {
 
     try {
       this.#isOpen = !this.#isOpen;
-      this.#back.style.display = this.#isOpen ? "none" : 'flex';
-      this.#front.style.display = this.#isOpen ? 'flex' : 'none';
+      this.#back.style.display = this.#isOpen ? "none" : "flex";
+      this.#front.style.display = this.#isOpen ? "flex" : "none";
 
       anime({
         targets: this.#card,
         rotateY: {
-            value: this.#isOpen ? '180' : '0',
-            duration: 300,
-            easing: 'easeInOutSine',
+          value: this.#isOpen ? "180" : "0",
+          duration: 300,
+          easing: "easeInOutSine",
         },
-    });
+      });
     } catch {
       return;
     }
@@ -135,26 +127,26 @@ class Timer {
   #timer;
   #timerUpdateInterval;
 
-  constructor (time, onTimeUp) {
-    this.endTime = Date.now() + time*1000;
+  constructor(time, onTimeUp) {
+    this.endTime = Date.now() + time * 1000;
     this.onTimeUp = onTimeUp;
   }
 
   clear() {
-    this.#timer.remove()
+    this.#timer.remove();
   }
 
   convertTimeToMMSS(time) {
-    const milisInSeconds =  Math.floor(time / 1000);
+    const milisInSeconds = Math.floor(time / 1000);
     const minutes = Math.floor(milisInSeconds / 60);
 
-    return `${minutes}:${milisInSeconds % 60}`
+    return `${minutes}:${milisInSeconds % 60}`;
   }
 
   stop() {
     clearInterval(this.#timerUpdateInterval);
   }
-  
+
   updateTime() {
     if (this.endTime - Date.now() < 0) {
       this.onTimeUp?.();
@@ -165,19 +157,18 @@ class Timer {
       return;
     }
 
-
     this.#timer.innerHTML = this.convertTimeToMMSS(this.endTime - Date.now());
   }
 
   render() {
-    const menu = document.getElementById('menu');
+    const menu = document.getElementById("menu");
     this.#timer = document.createElement("div");
-    this.#timer.classList.add('timer');
+    this.#timer.classList.add("timer");
     this.#timer.innerHTML = this.convertTimeToMMSS(this.endTime - Date.now());
 
-    menu.prepend(this.#timer)
+    menu.prepend(this.#timer);
 
-    this.#timerUpdateInterval = setInterval(this.updateTime.bind(this), 1000)
+    this.#timerUpdateInterval = setInterval(this.updateTime.bind(this), 1000);
   }
 }
 
@@ -196,7 +187,7 @@ class MatchGrid {
     this.theme = theme;
     this.cardsTotal = this.columns * this.rows;
 
-    this.#timer = new Timer(time, () => this.gameEnd("loss", "Time is out!"))
+    this.#timer = new Timer(time, () => this.gameEnd("loss", "Time is out!"));
   }
 
   set container(container) {
@@ -211,14 +202,14 @@ class MatchGrid {
       setTimeout(() => {
         card1.flip();
         card2.flip();
-      }, 500)
-      
+      }, 500);
+
       return;
     }
 
     card1.isFlipDisabled = true;
     card2.isFlipDisabled = true;
-    
+
     this.#machedCards.push(card1, card2);
 
     if (this.#machedCards.length === this.cardsTotal) {
@@ -229,11 +220,11 @@ class MatchGrid {
 
   clear() {
     this.#container.innerHTML = "";
-    
+
     // clear all related instances
     this.#timer.clear();
   }
-  
+
   gameEnd(type, massage) {
     this.#container.innerHTML = "";
 
@@ -260,23 +251,21 @@ class MatchGrid {
       return Math.random() - 0.5;
     });
 
-    
     for (let i = 0; i < this.cardsTotal; i++) {
-      this.#cards.push(new Card(
-        this.cardHeight,
-        this.cardWidth,
-        cardValues[i],
-        (card) => this.openCard(card)
-      ));
+      this.#cards.push(
+        new Card(this.cardHeight, this.cardWidth, cardValues[i], (card) =>
+          this.openCard(card)
+        )
+      );
     }
   }
 
   openCard(card) {
-    if (this.#flippedCards.find(flippedCard => flippedCard.id === card.id)) {
+    if (this.#flippedCards.find((flippedCard) => flippedCard.id === card.id)) {
       return;
     }
 
-    if (this.#machedCards.find(matchedCard => matchedCard.id === card.id)) {
+    if (this.#machedCards.find((matchedCard) => matchedCard.id === card.id)) {
       return;
     }
 
@@ -286,10 +275,10 @@ class MatchGrid {
     }
 
     if (this.#flippedCards.length === 2) {
-      this.checkCards()
+      this.checkCards();
     }
   }
-  
+
   setContainer() {
     this.#container.style.setProperty(
       `grid-template-columns`,
@@ -307,8 +296,8 @@ class MatchGrid {
   render() {
     this.setContainer();
     this.generateCards();
-    
-    this.#cards.forEach(card => this.#container.appendChild(card.render()));
+
+    this.#cards.forEach((card) => this.#container.appendChild(card.render()));
     this.#timer.render();
   }
 }
